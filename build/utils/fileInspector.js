@@ -199,7 +199,13 @@ function readConfig() {
         })();
         const tsFile = (() => {
             try {
-                return require(path_1.default.join(process.cwd(), "nexorm.config.ts"))?.default;
+                if (isNestProject()) {
+                    require('ts-node').register();
+                    return require(path_1.default.join(process.cwd(), "nexorm.config.ts"))?.default;
+                }
+                else {
+                    return require(path_1.default.join(process.cwd(), "nexorm.config.ts"))?.default;
+                }
             }
             catch (err) {
                 return null;
@@ -229,3 +235,12 @@ async function pushValue(options) {
     });
 }
 ;
+function isNestProject() {
+    try {
+        require.resolve('@nestjs/core', { paths: [process.cwd()] });
+        return true;
+    }
+    catch {
+        return false;
+    }
+}

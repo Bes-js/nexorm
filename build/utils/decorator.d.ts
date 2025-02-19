@@ -194,6 +194,10 @@ type ObjectPropsOnly<T> = Omit<{
     [K in keyof T]: ExtractPrimitiveType<T[K]> extends (object | null) ? never : K;
 }[keyof T]> & Record<string, any>;
 type ParseArrayToTypeOnlyOne<T> = T extends (infer U)[] ? U : never;
+interface SQLWhereOperators<SchemaProps, K> {
+    $or?: StaticProps<SchemaProps>[];
+    $and?: StaticProps<SchemaProps>[];
+}
 interface SQLOperators<SchemaProps, K> {
     $eq?: K;
     $ne?: K;
@@ -701,7 +705,9 @@ export declare class Model<SchemaProps> {
     $search(query?: {
         $where?: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: SearchMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -733,7 +739,9 @@ export declare class Model<SchemaProps> {
     $searchOne(query?: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: SearchMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -777,7 +785,9 @@ export declare class Model<SchemaProps> {
     $searchAndCount(query?: {
         $where?: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
     }): Promise<[
         StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
@@ -840,7 +850,9 @@ export declare class Model<SchemaProps> {
     $update(query?: {
         $where?: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $update?: UpdateOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -867,7 +879,9 @@ export declare class Model<SchemaProps> {
     $updateMany(query?: {
         $where?: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $update?: UpdateOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -893,7 +907,9 @@ export declare class Model<SchemaProps> {
     $delete(query?: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: DeleteMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -913,7 +929,9 @@ export declare class Model<SchemaProps> {
     $deleteMany(query?: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: DeleteMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -933,7 +951,9 @@ export declare class Model<SchemaProps> {
     $softDelete(query?: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: Omit<DeleteMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>, '$force'>;
@@ -953,7 +973,9 @@ export declare class Model<SchemaProps> {
     $softDeleteMany(query?: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: Omit<DeleteMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>, '$force'>;
@@ -973,13 +995,17 @@ export declare class Model<SchemaProps> {
     $restore(query?: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: RestoreMethodsOptions;
     }): Promise<void>;
     $count(query?: {
         $where?: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: CountMethodsOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -1000,7 +1026,9 @@ export declare class Model<SchemaProps> {
     $upsert(query: {
         $where: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $update: UpdateOptions<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
         }>>;
@@ -1040,7 +1068,9 @@ export declare class Model<SchemaProps> {
         }>)[];
         $where?: StaticProps<ExtendType<Omit<SchemaProps, 'prototype'>, {
             nexorm_id: string;
-        }>>;
+        }>> & SQLWhereOperators<ExtendType<Omit<SchemaProps, 'prototype'>, {
+            nexorm_id: string;
+        }>, SchemaProps>;
         $options?: Omit<UpdateMethodsOptions, '$attributes'>;
     }): Promise<any[][]>;
     /**

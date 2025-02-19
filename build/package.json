@@ -1,8 +1,8 @@
 {
   "name": "nexorm",
   "version": "1.0.7",
-  "main": "./src/index.js",
-  "types": "./src/index.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "bin": {
     "nexorm": "./cli/index.js"
   },

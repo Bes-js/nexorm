@@ -35,8 +35,8 @@ const errorHandler_1 = __importDefault(require("./errorHandler"));
 const cacheManager_1 = __importDefault(require("./util/cacheManager"));
 var schema = {};
 var havePrimaryKey = false;
-var haveAutoIncrement = false;
-var primaryKeyCount = 0;
+var haveAutoIncrement = {};
+var primaryKeyCount = {};
 var isWarned = false;
 var hashFieldsArray = [];
 var encryptFieldsArray = [];
@@ -240,7 +240,13 @@ function PrimaryKey(target, key) {
     }
     const primaryKeyFields = Reflect.getMetadata(`primaryKey-${target.name}`, target);
     primaryKeyFields.push(key);
-    primaryKeyCount++;
+    if (primaryKeyCount[target.name] == undefined) {
+        primaryKeyCount[target.name] = 1;
+    }
+    else {
+        primaryKeyCount[target.name]++;
+    }
+    ;
     Reflect.defineMetadata(`primaryKey-${target.name}`, primaryKeyFields, target);
 }
 ;
@@ -457,7 +463,7 @@ function Schema(target) {
             type: type,
             index: isIndex,
             allowNull: isAllowNull || false,
-            defaultValue: defaultValue[key] || null,
+            defaultValue: defaultValue?.hasOwnProperty(key) ? defaultValue[key] : null,
             primaryKey: isPrimaryKey,
             autoIncrement: isAutoIncrement,
             unique: isUnique,
@@ -724,7 +730,7 @@ function convertSchema(schema, dataName, modelName) {
                 allowNull: false,
                 defaultValue: node_crypto_1.default.randomUUID(),
                 primaryKey: havePrimaryKey ? false : true,
-                unique: true,
+                unique: false,
                 comment: 'Nexorm ID',
             };
         }
@@ -796,10 +802,10 @@ function convertSchema(schema, dataName, modelName) {
             throw new errorHandler_1.default('@Encrypt Can Only Be Used With String Type', '#FF0000');
         if (schema[key]?.decrypt && !String(schemaValue).includes("String"))
             throw new errorHandler_1.default('@Decrypt Can Only Be Used With String Type', '#FF0000');
-        if (primaryKeyCount > 1 && haveAutoIncrement)
+        if (primaryKeyCount[modelName] > 1 && haveAutoIncrement[modelName])
             throw new errorHandler_1.default('Multiple @PrimaryKey Not Supported With @AutoIncrement', '#FF0000');
-        if (!haveAutoIncrement && schema[key]?.autoIncrement)
-            haveAutoIncrement = true;
+        if (!haveAutoIncrement[modelName] && schema[key]?.autoIncrement)
+            haveAutoIncrement[modelName] = true;
         if (!schema[key]?.autoIncrement)
             newSchema[key].index = schema[key]?.index || false;
         if (!schema[key]?.autoIncrement)
@@ -825,9 +831,15 @@ function convertSchema(schema, dataName, modelName) {
             newSchema[key].unique = true;
         }
         ;
+        if (schema[key]?.unique) {
+            delete newSchema[key].defaultValue;
+            newSchema[key].unique = true;
+        }
+        ;
     });
     return newSchema;
 }
+;
 ;
 ;
 ;
