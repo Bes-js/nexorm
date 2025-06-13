@@ -6,6 +6,7 @@ export default class ErrorHandler extends Error {
         super(chalk.hex(hexCode || "#FF0000").bold(message));
         this.name = "Nexorm Error";
         this.message = message;
+
     };
 
 };

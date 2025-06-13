@@ -4,6 +4,11 @@
  * @type {NexormConfig} NexormConfigType
  * @property {'nexorm' | string} $provider @default 'nexorm' Provider name
  * @property {'mysql' | 'postgres' | 'sqlite' | 'mariadb' | 'mssql'} $database Database type
+ * @property {string[]} $sync @default [] Sync $entities
+ * @property {string} [$databaseTable] @default 'nexorm' Database table name
+ * @property {any} [$dialectOptions] Dialect options for database
+ * @property {string} [$protocol] @default 'tcp' Protocol for database connection
+ * @property {boolean} [$autoConnect] @default true Auto connect to database
  * @property {any} [$dialectModule] Dialect module for database
  * @property {string} [$filePath] @default './nexorm.sqlite' File path for SQLite database
  * @property {'InnoDB' | 'MyISAM' | 'MEMORY' | 'CSV' | 'BLACKHOLE' | 'ARCHIVE' | 'FEDERATED' | 'TOKUDB' | 'Aria' | 'PERFORMANCE_SCHEMA' | 'MRG_MYISAM' | 'ISAM' | 'MERGE' | 'NDB' | 'NDBCLUSTER' | 'EXAMPLE' | 'MEMORY'} [$databaseEngine] Database engine
@@ -23,8 +28,13 @@
 export type NexormConfigType = {
     $provider: 'nexorm' | (string & {});
     $database: 'mysql' | 'postgres' | 'sqlite' | 'mariadb' | 'mssql';
-    $dialectModule?: any;
+    $entities: (string | Function)[];
+    $force?: boolean;
     $autoConnect?: boolean;
+    $databaseTable?: string;
+    $dialectModule?: any;
+    $dialectOptions?: any;
+    $protocol?: string;
     $filePath?: string;
     $databaseEngine?: 'B-tree' | 'InnoDB' | 'MyISAM' | 'MEMORY' | 'CSV' | 'BLACKHOLE' | 'ARCHIVE' | 'FEDERATED' | 'TOKUDB' | 'Aria' | 'PERFORMANCE_SCHEMA' | 'MRG_MYISAM' | 'ISAM' | 'MERGE' | 'NDB' | 'NDBCLUSTER' | 'EXAMPLE' | 'MEMORY' | (string & {});
     $ssl?: boolean;
@@ -43,6 +53,7 @@ export type NexormConfigType = {
     $username?: string;
     $password?: string;
     $connectionURI?: string;
+    $connectTimeoutDuration?: number;
     $cache?: NexormCacheConfig;
 };
 

@@ -169,13 +169,14 @@ function createConfigFile(databaseType: string, databaseEngine: string, language
     console.log(chalk.blue.bold("Creating database configuration file..."));
     let config = `/* eslint-disable @typescript-eslint/no-var-requires */
 /** @type {import('nexorm').NexormConfig} */
-${language == 'js' ? '/* ' : ''}import type { NexormConfig } from "nexorm";${language == 'js' ? ' */' : ''}
+${language == 'js' ? '/* ' : ''}import { defineConfig, NexormConfig } from "nexorm";${language == 'js' ? ' */' : ''}
 
-export default [{
+export default defineConfig([{
     $provider: "nexorm",
     $database: "${databaseType}",
     $databaseEngine: "${databaseEngine}",
     ${databaseType == 'sqlite' ? '$filePath: "./nexorm.sqlite",' : ''}
+    $entities: [ /* Add your entities here */ ],
     $autoConnect: true,
     $onConnection: () => {
         console.log("[Nexorm] Database ready!");
@@ -183,7 +184,7 @@ export default [{
     $onError: (error: Error) => {
         console.error("[Nexorm] Error connecting to database:", error);
     },
-}]${language == 'js' ? '' : ' satisfies NexormConfig;'}`;
+}])${language == 'js' ? '' : ' satisfies NexormConfig;'}`;
 
     fs.writeFileSync(path.join(process.cwd(), `nexorm.config.${language}`), config, "utf-8");
     console.log(chalk.hex("#00ff00").bold("Database configuration file created successfully"));

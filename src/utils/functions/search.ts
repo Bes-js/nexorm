@@ -3,22 +3,20 @@ import type { StaticProps, SearchMethodsOptions } from "../decorator";
 import ErrorHandler from "../errorHandler";
 import { errorParser } from "../util/errorParser";
 import _ from "lodash";
-import CacheManager from "../util/cacheManager";
-import { readConfig } from "../fileInspector";
+import { CacheManager } from "../util/cacheManager";
+import { cachedConfig, readConfig } from "../fileInspector";
 
 export async function search(
     model: ModelStatic<Model<any, any>>,
     filter?: StaticProps<any>, 
     options?: SearchMethodsOptions<any>,
     cacheManager?: CacheManager,
-    config?: ReturnType<typeof readConfig>[0]
+    config?: typeof cachedConfig[0]
 ) {
-
-    var filterOptions = {} as FindOptions;
 
     if (!filter) filter = {};
     if (!options) options = {};
-
+    
 
     var cacheKey = `$seach:${
         typeof options.$cache === 'object' ? options.$cache.$key : model.name
@@ -29,6 +27,32 @@ export async function search(
         return result;
     };
 
+
+    var filterOptions = parseSearchManyOptions(options) as FindOptions;
+    
+
+    try {
+    const result = await model.findAll({ where: filter, ...filterOptions, nest: true, benchmark: true, transaction: (options?.$transaction as any)?.trx });
+
+    if (options.$cache) {
+        cacheManager?.$set(
+            cacheKey, 
+            result?.map((value) => value.dataValues), 
+            typeof options.$cache === 'object' ? 
+            options.$cache.$ttl : 
+            config?.$cache?.$duration || 60 * 1000
+    );
+    };
+
+    return result?.map((value) => value.dataValues) || null;
+    } catch (error) {
+        throw errorParser(error);
+    };
+};
+
+
+export function parseSearchManyOptions(options: SearchMethodsOptions<any>) {
+    var filterOptions = {} as FindOptions;
 
     if (options.$limit) {
         if (typeof options.$limit !== 'number') throw new ErrorHandler("Invalid value for $limit. Must be a number.", "#FF0000");
@@ -46,28 +70,16 @@ export async function search(
         filterOptions.order = Object.entries(options.$sort).map(([key, value]) => [key, value as any]);
     };
 
-    /*
-    if (options.$include) {
-        filterOptions.include = options.$include.map((include) => {
-            return {
-                model: include.$model,
-                attributes: include.$attributes as any,
-                as: include.$as || undefined
-            }
-        });
-    };
-    */
-
-    if (options.$having) {
+    if (options.hasOwnProperty('$having')) {
         filterOptions.having = options.$having;
     };
 
-    if (options.$raw) {
+    if (options.hasOwnProperty('$raw')) {
         if (typeof options.$raw !== 'boolean') throw new ErrorHandler("Invalid value for $raw. Must be a boolean.", "#FF0000");
         filterOptions.raw = options.$raw || false;
     };
 
-    if (options.$subQuery) {
+    if (options.hasOwnProperty('$subQuery')) {
         if (typeof options.$subQuery !== 'boolean') throw new ErrorHandler("Invalid value for $paginate. Must be a boolean.", "#FF0000");
         filterOptions.subQuery = options.$subQuery || false;
     };
@@ -89,27 +101,27 @@ export async function search(
         filterOptions.group = options.$group as string[];
     };
 
-    if (options.$skipLocked) {
+    if (options.hasOwnProperty('$skipLocked')) {
         if (typeof options.$skipLocked !== 'boolean') throw new ErrorHandler("Invalid value for $skipLocked. Must be a boolean.", "#FF0000");
         filterOptions.skipLocked = options.$skipLocked;
     };
 
-    if (options.$useMaster) {
+    if (options.hasOwnProperty('$useMaster')) {
         if (typeof options.$useMaster !== 'boolean') throw new ErrorHandler("Invalid value for $useMaster. Must be a boolean.", "#FF0000");
         filterOptions.useMaster = options.$useMaster;
     };
 
-    if (options.$plain) {
+    if (options.hasOwnProperty('$plain')) {
         if (typeof options.$plain !== 'boolean') throw new ErrorHandler("Invalid value for $plain. Must be a boolean.", "#FF0000");
         filterOptions.plain = options.$plain;
     };
 
-    if (options.$paranoid) {
+    if (options.hasOwnProperty('$paranoid')) {
         if (typeof options.$paranoid !== 'boolean') throw new ErrorHandler("Invalid value for $paranoid. Must be a boolean.", "#FF0000");
         filterOptions.paranoid = options.$paranoid;
     };
 
-    if (options.$subQuery) {
+    if (options.hasOwnProperty('$subQuery')) {
         if (typeof options.$subQuery !== 'boolean') throw new ErrorHandler("Invalid value for $subQuery. Must be a boolean.", "#FF0000");
         filterOptions.subQuery = options.$subQuery;
     };
@@ -128,21 +140,12 @@ export async function search(
         };
     };
 
-    try {
-    const result = await model.findAll({ where: filter, ...filterOptions, nest: true, benchmark: true, });
 
-    if (options.$cache) {
-        cacheManager?.$set(
-            cacheKey, 
-            result?.map((value) => value.dataValues), 
-            typeof options.$cache === 'object' ? 
-            options.$cache.$ttl : 
-            config?.$cache?.$duration || 60 * 1000
-    );
-    };
 
-    return result?.map((value) => value.dataValues) || null;
-    } catch (error) {
-        throw errorParser(error);
-    };
+    return filterOptions;
 };
+   
+
+
+   
+

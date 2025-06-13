@@ -1,11 +1,15 @@
-import fs from "fs";
+import fs, { read } from "fs";
 import path from "path";
 import chalk from "chalk";
+import * as glob from "glob";
 
 import type { NexormConfig } from "../types/config";
 
 import { Sequelize, Op } from 'sequelize';
 import ErrorHandler from "./errorHandler";
+import { getProviderModels, initializeBuilder, loadIndexed, loadRelationships } from "./modelBuilder";
+import { ConnectionManager } from "./util/connectionManager";
+import { pathToFileURL } from "url";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* Operator Deprecation Error */
@@ -16,7 +20,7 @@ process.emitWarning = ((warning: string | Error, type?: string | undefined, code
 }) as typeof process.emitWarning;
 
 
-const config = readConfig();
+var cachedConfig = [] as NexormConfig;
 var sequelizes: { 
     sequelize: Sequelize;
     name: string; 
@@ -26,7 +30,27 @@ var sequelizes: {
 var connections = [] as string[];
 
 
-async function autoConnect(providerName?: string) {
+async function connectAll() {
+    var config = await readConfig().catch((err) => { return undefined; });
+    if (!config) {
+        throw new ErrorHandler("Configuration file not found. Please run 'npx nexorm init' to initialize a new configuration file.", "#FF0000");
+    };
+
+    cachedConfig = config;
+
+    for (var conf of config) {
+        await connect(conf.$provider);
+        ConnectionManager.markConnected(conf.$provider);
+    };
+
+};
+
+
+
+async function connect(providerName: string) {
+        if (!providerName) providerName = 'nexorm';
+        var config = await readConfig();
+        cachedConfig = config;
     
         var conf = config.find((item) => item.$provider === providerName);
         if (!conf) {
@@ -41,12 +65,15 @@ async function autoConnect(providerName?: string) {
             throw new ErrorHandler(`File path '${conf.$filePath}' already exists.`, "#FF0000");
         }
 
+        ConnectionManager.markConnecting(conf.$provider);
+
         try {
             const sequelize = new Sequelize({
                 dialect: conf.$database,
                 dialectModule: conf.$dialectModule,
-                database: conf.$database,
+                database: conf.$databaseTable,
                 storage: conf.$filePath,
+                protocol: conf.$protocol,
                 pool: {
                     acquire: conf.$pool?.$acquire,
                     idle: conf.$pool?.$idle,
@@ -59,6 +86,7 @@ async function autoConnect(providerName?: string) {
                 username: conf.$username || conf.$connectionURI?.split(":")[2] || undefined,
                 password: conf.$password || conf.$connectionURI?.split(":")[3] || undefined,
                 ssl: conf.$ssl,
+                dialectOptions: conf.$dialectOptions,
                 logging: false,
                 define: {
                     freezeTableName: true,
@@ -105,16 +133,62 @@ async function autoConnect(providerName?: string) {
                 }
             });
 
-            if (conf.$database === "sqlite") {
-                sequelize.sync();
-            } else {
-                sequelize.authenticate();
-            }
+           
 
-            pushValue({ sequelize, name: conf.$provider, filePath: conf.$filePath });
+            await pushValue({ sequelize, name: conf.$provider, filePath: conf.$filePath });
             connections.push(conf.$provider);
+
+            var entities = conf.$entities || [];
+            
+            for (var entity of entities) {
+              if (typeof entity == 'string') {              
+                    const files = glob.sync(entity, { cwd: process.cwd() });
+
+                    for (const file of files) {
+                        const model = await import(path.join(process.cwd(), file));
+                        if (!model || !model.default) {
+                            throw new ErrorHandler(`Model file '${file}' does not export a default model.`, "#FF0000");
+                        };                        
+
+                        await initializeBuilder(providerName as string, model.default, sequelize);
+                    };
+                  } else
+                  if (typeof entity == 'function') {
+                    await initializeBuilder(providerName as string, entity, sequelize);
+                  } else {
+                    throw new ErrorHandler(`Invalid entity type: ${typeof entity}. Expected string or function.`, "#FF0000");
+                  }
+            };
+
+            const providerModelList = await getProviderModels(providerName as string);
+
+            for (const model of providerModelList) {
+                if (!model) continue;
+                await loadRelationships(model.model.name, sequelize, model.$schema, model.model, model.providerName);
+            };
+
+
+            var forceModel = conf.$force || false;
+            if (conf.$database === "sqlite") {
+              await sequelize.sync({ force: forceModel, alter: !forceModel });
+            } else {
+              await sequelize.authenticate();
+              await sequelize.sync({ force: forceModel, alter: !forceModel });
+            };
+
+            for (const model of providerModelList) {
+                if (!model) continue;
+                await loadIndexed(model.model.name, sequelize, model.schema).catch((err) => {
+                    console.error(chalk.red(`Error loading indexed for model '${model.model.name}':`), err);
+                });
+            };
+            
+
+            ConnectionManager.markConnected(conf.$provider);
+
             if (conf.$onConnection) conf.$onConnection();
         } catch (err) {
+            ConnectionManager.markDisconnected(conf.$provider);
             if (conf.$onError) {
                 conf.$onError((err as Error));
             } else {
@@ -125,7 +199,11 @@ async function autoConnect(providerName?: string) {
 };
 
 
-async function closeConnection(providerName?: string) {
+async function closeConnection(providerName: string) {
+    var config = await readConfig();
+
+    cachedConfig = config;
+
     var conf = config.find((item) => item.$provider === providerName);
     var sequelize = sequelizes.find((item) => item.name === providerName)?.sequelize;
 
@@ -145,10 +223,15 @@ async function closeConnection(providerName?: string) {
             process.exit();
         };
     }
+    ConnectionManager.markDisconnected(providerName);
 };
 
 
 async function dropProvider(providerName?: string) {
+    var config = await readConfig();
+
+    cachedConfig = config;
+
     var conf = config.find((item) => item.$provider === providerName);
     var sequelize = sequelizes.find((item) => item.name === providerName)?.sequelize;
 
@@ -171,22 +254,89 @@ async function dropProvider(providerName?: string) {
 };
 
 
-var autoConnection = config.filter((item) => item.$autoConnect === true);
-if (autoConnection.length > 0) {
-    for (var connection of autoConnection) {
-        autoConnect(connection.$provider);
-    };
-};
 
 
 
-export { sequelizes, readConfig, connections, autoConnect, closeConnection, dropProvider };
+export { sequelizes, readConfig, connections, connect, connectAll, closeConnection, dropProvider, cachedConfig };
 
 
-function readConfig(): NexormConfig {
+
+async function readConfig(): Promise<NexormConfig> {
+    return new Promise((resolve, reject) => {
+      const cwd = process.cwd();
+      const tsConfigPath = path.join(cwd, "nexorm.config.ts");
+      const jsConfigPath = path.join(cwd, "nexorm.config.js");
+      const mjsConfigPath = path.join(cwd, "nexorm.config.mjs");
+      const cjsConfigPath = path.join(cwd, "nexorm.config.cjs");
+  
+      const configPaths = [tsConfigPath, jsConfigPath, mjsConfigPath, cjsConfigPath];
+      const foundPath = configPaths.find((p) => fs.existsSync(p));
+  
+      if (!foundPath) {
+        console.log(
+          chalk.red.bold(
+            "Configuration file not found. Please run 'npx nexorm init' to initialize a new configuration file."
+          )
+        );
+        process.exit(1);
+      }
+  
+      const ext = path.extname(foundPath);
+  
+      try {
+        if (ext === ".js" || ext === ".cjs") {
+          const config = require(foundPath)?.default || require(foundPath);
+          if (!config) throw new Error("Config file is empty.");
+          return resolve(config);
+        }
+  
+        if (ext === ".ts" || ext === ".mjs") {
+          try {
+            try {
+              require("ts-node").register({
+                transpileOnly: true,
+                compilerOptions: {
+                  module: "commonjs",
+                },
+              });
+            } catch {
+              try {
+                require("esbuild-register");
+              } catch {
+                console.log(chalk.red("TypeScript config requires 'ts-node' or 'esbuild-register'. Please install one."));
+                return process.exit(1);
+              }
+            }
+  
+            const config = require(foundPath)?.default || require(foundPath);
+            if (!config) throw new Error("Config file is empty.");
+            return resolve(config);
+          } catch (err) {
+            console.log(chalk.red.bold("Failed to load TypeScript or ESM config."));
+            console.error(err);
+            process.exit(1);
+          }
+        }
+  
+        console.log(chalk.red.bold("Unsupported config file type."));
+        process.exit(1);
+      } catch (e) {
+        console.log(chalk.red.bold("Unexpected error loading configuration file."));
+        console.error(e);
+        process.exit(1);
+      }
+    });
+  }
+
+
+
+/*
+async function readConfig(): Promise<NexormConfig> {
+
+    return await new Promise<NexormConfig>((resolve, reject) => {
 
     if (!fs.existsSync(path.join(process.cwd(), "nexorm.config.ts")) && !fs.existsSync(path.join(process.cwd(), "nexorm.config.js"))) {
-        console.log(chalk.red.bold("Configuration file not found. Please run ' nexorm init ' to initialize a new configuration file"));
+        console.log(chalk.red.bold("Configuration file not found. Please run ' npx nexorm init ' to initialize a new configuration file"));
         process.exit();
     };
 
@@ -203,12 +353,8 @@ function readConfig(): NexormConfig {
     
         const tsFile = (() => {
             try {
-                if (isNestProject()) {
-                    require('ts-node').register();
+                
                     return require(path.join(process.cwd(), "nexorm.config.ts"))?.default;
-                } else {
-                    return require(path.join(process.cwd(), "nexorm.config.ts"))?.default;
-                }
             } catch (err) {
                 return null;
             }
@@ -218,7 +364,7 @@ function readConfig(): NexormConfig {
         if (tsFile) config = tsFile;
     
         if (!config) {
-            console.log(chalk.red.bold("Configuration file not found. Please run 'nexorm init' to initialize a new configuration file."));
+            console.log(chalk.red.bold("Configuration file not found. Please run ' npx nexorm init ' to initialize a new configuration file."));
             process.exit();
         }
     } catch (e) {
@@ -228,8 +374,14 @@ function readConfig(): NexormConfig {
     }
     
 
-    return config;
+    resolve(config as NexormConfig);
+ }).catch((err) => {
+    console.error(chalk.red.bold("Error reading configuration file. Please check if the file is correctly formatted."));
+    console.error(err);
+    process.exit();
+  });
 };
+*/
 
 
 
@@ -248,4 +400,4 @@ function isNestProject(): boolean {
     } catch {
       return false;
     }
-  }
+  };

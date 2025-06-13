@@ -3,8 +3,8 @@ import ErrorHandler from "../errorHandler";
 import { errorParser } from "../util/errorParser";
 import _ from "lodash";
 import { SearchMethodsOptions } from "../decorator";
-import CacheManager from "../util/cacheManager";
-import { readConfig } from "../fileInspector";
+import { CacheManager } from "../util/cacheManager";
+import { cachedConfig, readConfig } from "../fileInspector";
 
 export async function distinct(
     model: ModelStatic<Model<any, any>>,
@@ -12,7 +12,7 @@ export async function distinct(
     filter?: any, 
     options?: SearchMethodsOptions<any>,
     cacheManager?: CacheManager,
-    config?: ReturnType<typeof readConfig>[0]
+    config?: typeof cachedConfig[0]
     ) {
 
 
@@ -133,7 +133,7 @@ export async function distinct(
 
       
     try {
-    const result = await model.findAll({ where: filter, ...filterOptions, attributes: [...field], nest: true, benchmark: true, });
+    const result = await model.findAll({ where: filter, ...filterOptions, attributes: [...field], transaction: (options?.$transaction as any)?.trx , nest: true, benchmark: true, });
     
 
     if (options.$cache) {

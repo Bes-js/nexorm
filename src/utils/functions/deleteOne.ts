@@ -39,10 +39,10 @@ export async function deleteOne(
 
 
         try {
-            var findData = await model.findOne({ where: filter, ...filterOptions });
+            var findData = await model.findOne({ where: filter, ...filterOptions, transaction: (options?.$transaction as any)?.trx });
             if (!findData) return null;
 
-            return await findData.destroy({ force: filterOptions.force, logging: filterOptions.logging }); 
+            return await findData.destroy({ force: filterOptions.force, logging: filterOptions.logging, transaction: (options?.$transaction as any)?.trx, hooks: options?.$hooks ?? true }); 
         } catch (error) {
             throw errorParser(error);
         };

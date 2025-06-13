@@ -9,7 +9,7 @@
     "emitDeclarationOnly": false,
     "moduleResolution": "node",
     "module": "CommonJS",                        
-    "outDir": "./build",                        
+    "outDir": "./dist",                        
     "rootDir": "./src",                  
     "strict": true,                           
     "esModuleInterop": true,                

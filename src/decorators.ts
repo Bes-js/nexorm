@@ -1,22 +1,35 @@
 export {
-    Schema,
     Column,
+    IdColumn,
     Comment,
     Encrypt,
     Decrypt,
     Debug,
     Enum,
     Required,
-    Timestamps,
+    CreatedAt,
+    UpdatedAt,
+    DeletedAt,
     Unique,
     Paranoid,
-    PrimaryKey,
     Provider,
+    PrimaryKey,
     AllowNull,
     AutoIncrement,
     Default,
-    Force,
     Hash,
     Index,
-    UUID
+    UUID,
+    Roles,
+    Scopes,
+    /*
+    ForeignKey,
+    OneToOne,
+    OneToMany,
+    ManyToOne,
+    ManyToMany
+    */
  } from './utils/decorator';
+ export { 
+    Schema 
+} from './utils/modelBuilder';

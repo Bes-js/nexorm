@@ -28,7 +28,7 @@ export async function restore(
         };
 
         try {
-            return await model.restore({ where: filter, ...filterOptions });
+            return await model.restore({ where: filter, ...filterOptions, transaction: (options?.$transaction as any)?.trx, hooks: options?.$hooks ?? true });
         } catch (error) {
             throw errorParser(error);
         };

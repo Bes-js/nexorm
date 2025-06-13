@@ -32,19 +32,19 @@ export async function ruleParser(
     };
 
     if ((rules as any)[value].$alphaNumeric) {
-        if (targetValue && !targetValue?.match(/^[a-zA-Z0-9]*$/)) throw new Error(`$rules Value of '${value}' is not alphanumeric`);
+        if (targetValue && !String(targetValue)?.match(/^[a-zA-Z0-9]*$/)) throw new Error(`$rules Value of '${value}' is not alphanumeric`);
     };
 
     if ((rules as any)[value].$contains) {
-        if (targetValue && !targetValue?.includes((rules as any)[value].$contains)) throw new Error(`$rules Value of '${value}' does not contain the specified value`);
+        if (targetValue && !String(targetValue)?.includes((rules as any)[value].$contains)) throw new Error(`$rules Value of '${value}' does not contain the specified value`);
     };
 
     if ((rules as any)[value].$startsWith) {
-        if (targetValue && !targetValue?.startsWith((rules as any)[value].$startsWith)) throw new Error(`$rules Value of '${value}' does not start with the specified value`);
+        if (targetValue && !String(targetValue)?.startsWith((rules as any)[value].$startsWith)) throw new Error(`$rules Value of '${value}' does not start with the specified value`);
     };
 
     if ((rules as any)[value].$endsWith) {
-        if (targetValue && !targetValue?.endsWith((rules as any)[value].$endsWith)) throw new Error(`$rules Value of '${value}' does not end with the specified value`);
+        if (targetValue && !String(targetValue)?.endsWith((rules as any)[value].$endsWith)) throw new Error(`$rules Value of '${value}' does not end with the specified value`);
     };
 
     if ((rules as any)[value].$exclude) {
@@ -52,27 +52,27 @@ export async function ruleParser(
     };
 
     if ((rules as any)[value].$noWhitespace) {
-        if (targetValue && targetValue?.match(/\s/)) throw new Error(`$rules Value of '${value}' contains whitespace`);
+        if (targetValue && String(targetValue)?.match(/\s/)) throw new Error(`$rules Value of '${value}' contains whitespace`);
     };
 
     if ((rules as any)[value].$onlySpecialChars) {
-        if (targetValue && !targetValue?.match(/[^a-zA-Z0-9]/)) throw new Error(`$rules Value of '${value}' contains characters other than special characters`);
+        if (targetValue && !String(targetValue)?.match(/[^a-zA-Z0-9]/)) throw new Error(`$rules Value of '${value}' contains characters other than special characters`);
     };
 
     if ((rules as any)[value].$noSpecialChars) {
-        if (targetValue && targetValue?.match(/[^a-zA-Z0-9]/)) throw new Error(`$rules Value of '${value}' contains special characters`);
+        if (targetValue && String(targetValue)?.match(/[^a-zA-Z0-9]/)) throw new Error(`$rules Value of '${value}' contains special characters`);
     };
 
     if ((rules as any)[value].$alpha) {
-        if (targetValue && !targetValue?.match(/^[a-zA-Z]*$/)) throw new Error(`$rules Value of '${value}' is not alphabetic`);
+        if (targetValue && !String(targetValue)?.match(/^[a-zA-Z]*$/)) throw new Error(`$rules Value of '${value}' is not alphabetic`);
     };
 
     if ((rules as any)[value].$numeric) {
-        if (targetValue && !targetValue?.match(/^[0-9]*$/)) throw new Error(`$rules Value of '${value}' is not numeric`);
+        if (targetValue && !String(targetValue)?.match(/^[0-9]*$/)) throw new Error(`$rules Value of '${value}' is not numeric`);
     };
 
     if ((rules as any)[value].$locale) {
-        if (targetValue && !targetValue?.match(/^[a-zA-Z0-9]*$/)) throw new Error(`$rules Value of '${value}' is not in the specified locale`);
+        if (targetValue && !String(targetValue)?.match(/^[a-zA-Z0-9]*$/)) throw new Error(`$rules Value of '${value}' is not in the specified locale`);
     };
 
     if ((rules as any)[value].$mustBeTrue) {

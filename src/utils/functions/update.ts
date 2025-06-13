@@ -30,17 +30,24 @@ export async function updateOne(
 
 
     try {
-    var findedValue = await model.findOne({ where: where });
+    var findedValue = await model.findOne({ where: where, transaction: (options?.$transaction as any)?.trx });
     if (!findedValue && options.$upsert) {
-        var buildValue = await updateParser({ dataValues: where } as any, update, rules, model.name, schema);
+        var buildValue = await updateParser({ dataValues: where } as any, update, rules, model.name, schema);        
 
-        return (await build(model, buildValue));
+        return (await build(model, { ...where, ...buildValue },{ $transaction: options.$transaction, $hooks: options.$hooks })).dataValues;
     };
     if (!findedValue) return null;
     var value = await updateParser(findedValue,update, rules, model.name, schema);
+    
     if (!value || Object.keys(value)?.length == 0) throw new ErrorHandler("No data provided.", "#FF0000");
 
-    var data = (await findedValue.update(value)).dataValues;
+
+    for (var key in value) {
+        findedValue.changed(key as any, true);
+    };
+
+
+    var data = (await findedValue.update(value,{ transaction: (options?.$transaction as any)?.trx, hooks: options?.$hooks ?? true })).dataValues;
     
 
     return data;

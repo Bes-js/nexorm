@@ -59,7 +59,7 @@ export async function count(
 
 
         try {
-            return await model.count({ where: filter, ...filterOptions });
+            return await model.count({ where: filter, ...filterOptions, transaction: (options?.$transaction as any)?.trx });
         } catch (error) {
             throw errorParser(error);
         };

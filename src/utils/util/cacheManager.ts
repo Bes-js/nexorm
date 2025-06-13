@@ -1,8 +1,7 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
-export default class CacheManager extends Map {
+export class CacheManager extends Map {
 
     /**
      * Cache Manager
@@ -166,12 +165,12 @@ export default class CacheManager extends Map {
     /**
      * Find with Nexorm Id
      * 
-     * @param {string} nexorm_id Nexorm Id
+     * @param {string} ObjectId Object Id
      * @returns {[string, any] | undefined}
-     * @example cache.$findWithNexormId('nexorm_id');
+     * @example cache.$findWithNexormId('ObjectId123');
      */
-    $findWithNexormId(nexorm_id: string): [string, any] | undefined {
-        return this.$toJSON().find(([key, value]) => value?.nexorm_id == nexorm_id) || undefined;
+    $findWithObjectId(ObjectId: string): [string, any] | undefined {
+        return this.$toJSON().find(([key, value]) => value?.ObjectId == ObjectId) || undefined;
     };
 
     /**

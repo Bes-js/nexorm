@@ -39,7 +39,7 @@ export async function deleteMany(
         };
 
         try {
-            return await model.destroy({ where: filter, ...filterOptions });
+            return await model.destroy({ where: filter, ...filterOptions, transaction: (options?.$transaction as any)?.trx, hooks: options?.$hooks ?? true });
         } catch (error) {
             throw errorParser(error);
         };    

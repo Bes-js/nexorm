@@ -1,7 +1,6 @@
 import ErrorHandler from "../errorHandler";
 
 export function errorParser(error: any) {
-    
     switch (error.name) {
         case 'SequelizeValidationError':
             return new ErrorHandler(`Validation failed, ${error?.errors[0].message}`);
@@ -33,7 +32,7 @@ export function errorParser(error: any) {
         case 'SequelizeForeignKeyConstraintError':
             return new ErrorHandler(`Foreign key constraint failed, '${error?.errors[0].value}' not found`);
         case 'SequelizeDatabaseError':
-            if (error?.message?.includes('"AUTOINCREMENT": syntax error')) return new ErrorHandler(`You can only use one @AutoIncrement per table`);
+            if (error?.message?.includes('"AUTOINCREMENT": syntax error')) return new ErrorHandler(`You can only use one @AutoIncrement or @IdColumn per table`);
             return new ErrorHandler(`Database error occurred: ${error.message}`);
         case 'SequelizeConnectionError':
             return new ErrorHandler(`Connection error occurred: ${error.message}`);

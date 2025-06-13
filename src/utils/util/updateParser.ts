@@ -87,10 +87,8 @@ export async function updateParser(
             if (operator == '$inc') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => value + valueData);
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (upt) => (upt || 0) + (valueData as any));
+                    
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = parsedUpdate[key] + value;
@@ -103,10 +101,7 @@ export async function updateParser(
             if (operator == '$dec') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => value - (valueData as any));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => (value || 0) - (valueData as any));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = parsedUpdate[key] - value;
@@ -118,11 +113,8 @@ export async function updateParser(
 
             if (operator == '$mul') {
                 if (String(key).includes('.')) {
-                    await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => value * (valueData as any));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    await ruleParser(key,rules, valueData);                    
+                    _.update(parsedUpdate, key, (value) => value * (valueData as any));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = parsedUpdate[key] * value;
@@ -135,10 +127,7 @@ export async function updateParser(
             if (operator == '$div') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => value / (valueData as any));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => value / (valueData as any));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = parsedUpdate[key] / value;
@@ -151,10 +140,7 @@ export async function updateParser(
             if (operator == '$min') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.min(value, (valueData as any)));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.min(value, (valueData as any)));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.min(parsedUpdate[key], value);
@@ -168,10 +154,7 @@ export async function updateParser(
             if (operator == '$max') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.max(value, (valueData as any)));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.max(value, (valueData as any)));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.max(parsedUpdate[key], value);
@@ -184,10 +167,7 @@ export async function updateParser(
             if (operator == '$sqrt') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.sqrt(value));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.sqrt(value));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.sqrt(parsedUpdate[key]);
@@ -200,10 +180,7 @@ export async function updateParser(
             if (operator == '$floor') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.floor(value));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.floor(value));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.floor(parsedUpdate[key]);
@@ -216,10 +193,7 @@ export async function updateParser(
             if (operator == '$random') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.random());
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.random());
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.random();
@@ -232,10 +206,7 @@ export async function updateParser(
             if (operator == '$abs') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.abs(value));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.abs(value));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.abs(parsedUpdate[key]);
@@ -248,10 +219,7 @@ export async function updateParser(
             if (operator == '$ceil') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.ceil(value));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.ceil(value));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.ceil(parsedUpdate[key]);
@@ -264,10 +232,7 @@ export async function updateParser(
             if (operator == '$pow') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.pow(value, (valueData as any)));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.pow(value, (valueData as any)));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.pow(parsedUpdate[key], value);
@@ -280,14 +245,11 @@ export async function updateParser(
             if (operator == '$toFixed') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => {
+                    _.update(parsedUpdate, key, (value) => {
                         if (typeof value !== 'number') throw new Error('$toFixed can only be used with numbers');
                         if (typeof valueData !== 'number') throw new Error('$toFixed can only be used with number values');
                         return value.toFixed(valueData as any);
                     });
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
                 } else {
                     await ruleParser(key,rules, valueData);
                     if (typeof parsedUpdate[key] !== 'number') throw new Error('$toFixed can only be used with numbers');
@@ -302,14 +264,11 @@ export async function updateParser(
             if (operator == '$toExponential') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => {
+                    _.update(parsedUpdate, key, (value) => {
                         if (typeof value !== 'number') throw new Error('$toExponential can only be used with numbers');
                         if (typeof valueData !== 'number') throw new Error('$toExponential can only be used with number values');
                         return value.toExponential(valueData);
                     });
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
                 } else {
                     await ruleParser(key,rules, valueData);
                     if (typeof parsedUpdate[key] !== 'number') throw new Error('$toExponential can only be used with numbers');
@@ -324,14 +283,11 @@ export async function updateParser(
             if (operator == '$toPrecision') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => {
+                    _.update(parsedUpdate, key, (value) => {
                         if (typeof value !== 'number') throw new Error('$toPrecision can only be used with numbers');
                         if (typeof valueData !== 'number') throw new Error('$toPrecision can only be used with number values');
                         return value.toPrecision(valueData)
                     });
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
                 } else {
                     await ruleParser(key,rules, valueData);
                     if (typeof parsedUpdate[key] !== 'number') throw new Error('$toPrecision can only be used with numbers');
@@ -346,10 +302,7 @@ export async function updateParser(
             if (operator == '$round') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.round(value));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.round(value));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.round(parsedUpdate[key]);
@@ -362,10 +315,7 @@ export async function updateParser(
             if (operator == '$trunc') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => Math.trunc(value));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => Math.trunc(value));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = Math.trunc(parsedUpdate[key]);
@@ -378,10 +328,7 @@ export async function updateParser(
             if (operator == '$mod') {
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
-                    let oldObject = parsedUpdate[key.split('.')[0]] || {};
-                    let object = _.update(oldObject, key, (value) => value % (valueData as any));
-
-                    parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
+                    _.update(parsedUpdate, key, (value) => value % (valueData as any));
                 } else {
                     await ruleParser(key,rules, valueData);
                     parsedUpdate[key] = parsedUpdate[key] % value;
@@ -397,6 +344,7 @@ export async function updateParser(
                 if (String(key).includes('.')) {
                     await ruleParser(key,rules, valueData);
                     let oldObject = parsedUpdate[key.split('.')[0]] || {};
+                    if (!oldObject[key]) oldObject[key] = false;
                     let object = _.update(oldObject, key, (value) => !value);
 
                     parsedUpdate[key.split('.')[0]] = object[key.split('.')[0]];
@@ -938,7 +886,7 @@ export async function updateParser(
                     if (typeof $begin !== 'number' || typeof $end !== 'number') throw new Error('$begin and $end must be numbers');
                     if ($begin > $end) throw new Error('$begin must be less than $end');
                     if ($begin < 0) $begin = 0;
-                    if ($end > parsedUpdate[key].length) $end = parsedUpdate[key].length;
+                    if ($end > parsedUpdate[key]?.length) $end = parsedUpdate[key].length;
                     if (!_.isArray(parsedUpdate[key])) parsedUpdate[key] = [];
 
                     parsedUpdate[key] = parsedUpdate[key].slice($begin, $end);
@@ -970,6 +918,7 @@ export async function updateParser(
 
 
     };
+    
 
 
     return parsedUpdate;
